@@ -35,56 +35,7 @@ WiFiClient client;
 unsigned long myTalkBackID = 36107;
 const char * myTalkBackKey = "BQG33AKQC4K3NSOE" ;
 
-// General function to POST to ThingSpeak
-int httpPOST(String uri, String postMessage, String &response){
 
-  bool connectSuccess = false;
-  connectSuccess = client.connect("api.thingspeak.com",80);
-
-  if(!connectSuccess){
-      return -301;   
-  }
-  
-  postMessage += "&headers=false";
-  
-  String Headers =  String("POST ") + uri + String(" HTTP/1.1\r\n") +
-                    String("Host: api.thingspeak.com\r\n") +
-                    String("Content-Type: application/x-www-form-urlencoded\r\n") +
-                    String("Connection: close\r\n") +
-                    String("Content-Length: ") + String(postMessage.length()) +
-                    String("\r\n\r\n");
-
-  client.print(Headers);
-  client.print(postMessage);
-
-  long startWaitForResponseAt = millis();
-  while(client.available() == 0 && millis() - startWaitForResponseAt < 5000){
-      delay(100);
-  }
-
-  if(client.available() == 0){       
-    return -304; // Didn't get server response in time
-  }
-
-  if(!client.find(const_cast<char *>("HTTP/1.1"))){
-      return -303; // Couldn't parse response (didn't find HTTP/1.1)
-  }
-  
-  int status = client.parseInt();
-  if(status != 200){
-    return status;
-  }
-
-  if(!client.find(const_cast<char *>("\n\r\n"))){
-    return -303;
-  }
-
-  String tempString = String(client.readString());
-  response = tempString;
-  
-  return status;
-    
-}
 
 String createCI(String server, String ae, String cnt, String val) {
 
@@ -159,6 +110,70 @@ void setup() {
     timeold = millis(); // initailizng time
     timeold_post = millis(); //posting to thingspeak server
     timeold_m = millis(); //posting to om2m server
+    
+}
+
+// General function to POST to ThingSpeak
+int httpPOST(String uri, String postMessage, String &response,long d){
+
+  bool connectSuccess = false;
+  connectSuccess = client.connect("api.thingspeak.com",80);
+
+  if(!connectSuccess){
+      return -301;   
+  }
+  
+  postMessage += "&headers=false";
+  
+  String Headers =  String("POST ") + uri + String(" HTTP/1.1\r\n") +
+                    String("Host: api.thingspeak.com\r\n") +
+                    String("Content-Type: application/x-www-form-urlencoded\r\n") +
+                    String("Connection: close\r\n") +
+                    String("Content-Length: ") + String(postMessage.length()) +
+                    String("\r\n\r\n");
+
+  client.print(Headers);
+  client.print(postMessage);
+
+  long startWaitForResponseAt = millis();
+  while(client.available() == 0 && millis() - startWaitForResponseAt < 5000){
+      if (d >= 60) {
+        digitalWrite(motorPin2, HIGH);
+        delay(p);
+    } else if (d <= 10) {
+        digitalWrite(motorPin2, LOW);
+        delay(p);
+    } else {
+        int delay = (d - 10) * 2;
+        digitalWrite(motorPin2, HIGH);
+        delayMicroseconds(delay * 500);
+        digitalWrite(motorPin2, LOW);
+        int dd = p - delay;
+        delayMicroseconds(dd * 10);
+    }
+  }
+
+  if(client.available() == 0){       
+    return -304; // Didn't get server response in time
+  }
+
+  if(!client.find(const_cast<char *>("HTTP/1.1"))){
+      return -303; // Couldn't parse response (didn't find HTTP/1.1)
+  }
+  
+  int status = client.parseInt();
+  if(status != 200){
+    return status;
+  }
+
+  if(!client.find(const_cast<char *>("\n\r\n"))){
+    return -303;
+  }
+
+  String tempString = String(client.readString());
+  response = tempString;
+  
+  return status;
     
 }
 
@@ -246,7 +261,7 @@ void onem2m_post(long distance_1, long distance_2)
         } 
 }
 
-void talkback()
+void talkback(long d)
 {
     // Create the TalkBack URI
   String tbURI = String("/talkbacks/") + String(myTalkBackID) + String("/commands/execute");
@@ -258,7 +273,7 @@ void talkback()
   String newCommand = String();
 
   // Make the POST to ThingSpeak
-  int x = httpPOST(tbURI, postMessage, newCommand);
+  int x = httpPOST(tbURI, postMessage, newCommand,d);
   client.stop();
   
   // Check the result
@@ -330,11 +345,11 @@ void loop() {
     if (millis() - timeold >= 5000) {
         rpm = ((60 * 1000 / pulsesperturn) / (millis() - timeold) * pulses) / 36;
         rpm/=20;
-        timeold = millis();
         Serial.print("--------------------------------------------------------------   RPM = ");
         pulses = 0;
         Serial.println(rpm);
-//        talkback();
+        talkback(d);
+        timeold = millis();
     }
 
     if (millis() - timeold_post >= 60000) {
