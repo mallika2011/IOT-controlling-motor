@@ -23,3 +23,5 @@ To gerate the graphs the following steps are followed:
     * daily.png
     * hourly.png
 
+* The Arduino Code flashed on the ESP32 is in the directory "Final_Code"
+
