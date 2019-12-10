@@ -8,17 +8,19 @@ d1=[]
 d2=[]
 rpm=[]
 flag=0
-f = open('testfile.txt')
+f = open('data16.txt')
 line = f.readline()
 while line:
     lol=line.split('T')
-    if lol[0]=="20191120":
+    lee=lol[1].split('\n')
+    lol=lol[0].split()
+    # print(lol[`/`])
+    if lol[1]=="20191110":
         flag=1
     if flag==1:
-        date.append(int(lol[0]))
-        lol=lol[1].split()
-        time.append(int(lol[0]))
-        lol=lol[1].split('(')
+        time.append(int(lee[0]))
+        date.append(int(lol[1]))
+        lol=lol[0].split('(')
         lol=lol[1].split(',')
         d1.append(int(lol[0]))
         rpm.append(int(lol[2]))
@@ -28,7 +30,7 @@ while line:
 f.close()
 
 #Plotting distances
-print(date,time,d1,d2,rpm)
+print(date)
 plt.plot(d2,'-bo')
 plt.xlabel('time') 
 plt.ylabel('Distance 2') 
@@ -56,13 +58,10 @@ index=0
 indices=[]
 
 for i in range(len(d1)):
-    print(date[i])
-    print(i)
     if(curdate==date[i]):
         sum+=d1[i]+d2[i]
         count+=1
     else:
-        print(i)
         if(count>0):
             sum/=count
             traffic.append(sum)
@@ -106,11 +105,11 @@ for i in range(24):
         traffic[i]=0
     indices.append(i)
 
-print(traffic)
-print(indices)
+
 plt.bar(indices,traffic,color = ['orange']) 
 plt.xlabel('Hour') 
 plt.ylabel('Traffic') 
 plt.savefig('./hourly.png')
 plt.clf()
 # plt.show()
+
