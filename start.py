@@ -11,12 +11,9 @@ browser = webdriver.Chrome(ChromeDriverManager().install())
 xpath = '//*[@id="login"]/center/table/tbody/tr[3]/td[2]/button'
 
 team16_path = '//*[@id="_in-cse"]/li[18]'
-#team8_path = '//*[@id="_in-cse"]/li[10]'
 
-#node1_path = '//*[@id="_in-cse_CAE251058832"]/li[3]'
 node16_path = '//*[@id="_in-cse_CAE780981258"]/li[2]'
 
-#instance_path = '//*[@id="_in-cse_cnt-648769734"]/li'
 instance_path = '//*[@id="_in-cse_cnt-395057765"]/li'
 
 data_patj = '//*[@id="cont"]'
